@@ -179,6 +179,8 @@ export default function Tweets() {
 
     const [form, setForm] = useState(false)
     const [message, setMessage] = useState('')
+    // grabbing the tweet Id from the onClick
+    const [postId, setPostId] = useState('')
 
     // showing the form in the UI
     const handleReport = async () => {
@@ -192,7 +194,9 @@ export default function Tweets() {
             message: message,
             user: auth.currentUser.email,
             userId: auth.currentUser.uid,
+            tweetId: postId,
         });
+        alert('report succesfully sent')
         setForm(false)
         console.log('report sent')
     }
@@ -251,7 +255,7 @@ export default function Tweets() {
                                     {following ? <DefaultButton onClick={() => handleUnfollow()}>Unfollow</DefaultButton> : <DefaultButton onClick={() => handleFollow()}>Follow</DefaultButton>}
                                     {/* <DefaultButton onClick={()=> handleFollow()}>{followText}</DefaultButton> */}
                                     <DefaultButton onClick={() => handleEdit()}>Edit</DefaultButton>
-                                    <DefaultButton onClick={() => handleReport()}>Report</DefaultButton>
+                                    <DefaultButton onClick={() => { handleReport(); setPostId(tweet.id);}}>Report</DefaultButton>
                                 </div>
                             </PostHeader>
                             <PostBody> {tweet.text}</PostBody>
