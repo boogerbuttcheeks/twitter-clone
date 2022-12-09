@@ -78,6 +78,22 @@ const PageHeader = styled.div`
     margin-top: 40px;
 `;
 
+// report Compononet
+
+const ReportPopup = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    padding: 20px;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    margin: 20px 20px;
+`;
+
+
 // end of Components 
 
 export default function Tweets() {
@@ -208,18 +224,19 @@ export default function Tweets() {
             {/* show tweets */}
 
             <PostDisplay>
-
+                {/* report form popup */}
                 {
                     form ? (
                         <>
-                            <PostContent>
+                            <ReportPopup>
+                                <DefaultButton onClick={() => setForm(false)}>x</DefaultButton>
                                 <label>What's your reason for reporting?</label>
                                 <textarea
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                 ></textarea>
-                                <button onClick={sendReport}>Next</button>
-                            </PostContent>
+                                <DefaultButton onClick={sendReport}>Next</DefaultButton>
+                            </ReportPopup>
                         </>) : null
                 }
                 {/* <button onClick={()=>showTweet()}>test button</button> */}
