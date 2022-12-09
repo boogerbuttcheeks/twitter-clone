@@ -3,14 +3,14 @@ import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndP
 import { auth, db } from '../firebase/firebase.config';
 import { useState } from "react";
 import { Firestore, getDocs } from "firebase/firestore";
-import { collection, doc, addDoc, postDoc, getDoc} from "firebase/firestore";
+import { collection, doc, addDoc, postDoc, getDoc } from "firebase/firestore";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 
 
 //components
-    const PostContent = styled.div`
+const PostContent = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -23,7 +23,7 @@ import styled from "styled-components";
     margin: 20px 20px;
 `;
 
-    const PostBody = styled.div`
+const PostBody = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -33,20 +33,20 @@ import styled from "styled-components";
     border-radius: 10px;
 `;
 
-    const UserName = styled.div`
+const UserName = styled.div`
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 10px;
 `;
 
-    const PostHeader = styled.div`
+const PostHeader = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
 `;
 
-    const PostDisplay = styled.div`
+const PostDisplay = styled.div`
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -80,17 +80,17 @@ const PageHeader = styled.div`
 
 // end of Components 
 
-export default function Tweets(){
-  
+export default function Tweets() {
+
     const router = useRouter();
     const handleClick = (e) => {
-      router.back('./')
+        router.back('./')
     }
-  
 
-    useEffect(()=>{
+
+    useEffect(() => {
         showTweet()
-    },[])
+    }, [])
 
     // handle tweets
 
@@ -98,13 +98,13 @@ export default function Tweets(){
     const [tweet, setTweet] = useState('')
     const [viewTweet, showNewTweet] = useState([])
 
-    const handleSubmit = event =>{
+    const handleSubmit = event => {
         event.preventDefault()
         event.target.reset()
     }
 
-    const createTweet = async()=>{
-        const postDoc = await addDoc(collection(db, "posts"),{
+    const createTweet = async () => {
+        const postDoc = await addDoc(collection(db, "posts"), {
             text: tweet,
             user: auth.currentUser.email,
             userId: auth.currentUser.uid
@@ -113,12 +113,12 @@ export default function Tweets(){
         showTweet();
     }
 
-    const showTweet = async()=>{
+    const showTweet = async () => {
         const getDoc = await getDocs(collection(db, "posts"));
         var newTweets = [];
-        getDoc.forEach((doc)=>{
+        getDoc.forEach((doc) => {
             console.log(doc.id, "=>", doc.data());
-            newTweets.push({...doc.data(),id:doc.id})
+            newTweets.push({ ...doc.data(), id: doc.id })
         });
         showNewTweet([...newTweets]);
         console.log(viewTweet);
@@ -128,9 +128,9 @@ export default function Tweets(){
     // Handle following
 
     const [following, setFollowing] = useState(false)
-    
-    const handleFollow = async()=>{
-        const postDoc = await addDoc(collection(db, "follow"),{
+
+    const handleFollow = async () => {
+        const postDoc = await addDoc(collection(db, "follow"), {
             follow: follow,
             user: auth.currentUser.email,
             userId: auth.currentUser.uid
@@ -139,8 +139,8 @@ export default function Tweets(){
         console.log('followed')
     }
 
-    const handleUnfollow = async()=>{
-        const postDoc = await addDoc(collection(db, "unfollow"),{
+    const handleUnfollow = async () => {
+        const postDoc = await addDoc(collection(db, "unfollow"), {
             unfollow: follow,
             user: auth.currentUser.email,
             userId: auth.currentUser.uid
@@ -153,7 +153,7 @@ export default function Tweets(){
 
     // handle edit 
 
-    const handleEdit = async()=>{
+    const handleEdit = async () => {
         console.log('edit post')
     }
 
@@ -161,8 +161,24 @@ export default function Tweets(){
 
     // handle report tweet
 
-    const handleReport = async()=>{
+    const [form, setForm] = useState(false)
+    const [message, setMessage] = useState('')
+
+    // showing the form in the UI
+    const handleReport = async () => {
         console.log('report post')
+        setForm(true)
+    }
+
+    // sending the report
+    const sendReport = async () => {
+        const SubmitForm = await addDoc(collection(db, "report"), {
+            message: message,
+            user: auth.currentUser.email,
+            userId: auth.currentUser.uid,
+        });
+        setForm(false)
+        console.log('report sent')
     }
 
     // end of handle report tweet
@@ -171,41 +187,55 @@ export default function Tweets(){
         <div>
             {/* Creating a new tweet */}
             <PageHeader>
-            <button onClick={()=>handleClick()}>home</button>
-            <div>
-                <form onSubmit={handleSubmit}>
+                <button onClick={() => handleClick()}>home</button>
+                <div>
+                    <form onSubmit={handleSubmit}>
 
-                    {/* helppp can someone make the user name/email show like on the home page when logged in pls */}
-                    
-                    <div>{tweet.user}</div>
-                    <input 
-                        placeholder="What's happening?"
-                        type="text"
-                        onChange={(event)=> {
-                            setTweet(event.target.value)
-                        }}
-                    />
-                    <button onClick={createTweet}>Tweet</button>
-                </form>
-            </div>
+                        {/* helppp can someone make the user name/email show like on the home page when logged in pls */}
+
+                        <div>{tweet.user}</div>
+                        <input
+                            placeholder="What's happening?"
+                            type="text"
+                            onChange={(event) => {
+                                setTweet(event.target.value)
+                            }}
+                        />
+                        <button onClick={createTweet}>Tweet</button>
+                    </form>
+                </div>
             </PageHeader>
             {/* show tweets */}
-            
+
             <PostDisplay>
+
+                {
+                    form ? (
+                        <>
+                            <PostContent>
+                                <label>What's your reason for reporting?</label>
+                                <textarea
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                ></textarea>
+                                <button onClick={sendReport}>Next</button>
+                            </PostContent>
+                        </>) : null
+                }
                 {/* <button onClick={()=>showTweet()}>test button</button> */}
-                {viewTweet.map(tweet =>{
-                    return(
+                {viewTweet.map(tweet => {
+                    return (
                         <PostContent key={tweet.id}>
                             <PostHeader>
-                            <UserName>
-                                {tweet.user}
-                            </UserName>
-                            <div>
-                                {following ? <DefaultButton onClick={()=>handleUnfollow()}>Unfollow</DefaultButton> : <DefaultButton onClick={()=>handleFollow()}>Follow</DefaultButton>}
-                                {/* <DefaultButton onClick={()=> handleFollow()}>{followText}</DefaultButton> */}
-                                <DefaultButton onClick={()=> handleEdit()}>Edit</DefaultButton>
-                                <DefaultButton onClick={()=> handleReport()}>Report</DefaultButton>
-                            </div>
+                                <UserName>
+                                    {tweet.user}
+                                </UserName>
+                                <div>
+                                    {following ? <DefaultButton onClick={() => handleUnfollow()}>Unfollow</DefaultButton> : <DefaultButton onClick={() => handleFollow()}>Follow</DefaultButton>}
+                                    {/* <DefaultButton onClick={()=> handleFollow()}>{followText}</DefaultButton> */}
+                                    <DefaultButton onClick={() => handleEdit()}>Edit</DefaultButton>
+                                    <DefaultButton onClick={() => handleReport()}>Report</DefaultButton>
+                                </div>
                             </PostHeader>
                             <PostBody> {tweet.text}</PostBody>
                         </PostContent>
