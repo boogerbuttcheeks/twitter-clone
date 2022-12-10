@@ -79,18 +79,32 @@ export const PageHeader = styled.div`
 // report Compononet
 
 const ReportPopup = styled.div`
+position: fixed;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: #f5f5f5;
     padding: 20px;
-    max-width: 600px;
     border-radius: 10px;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-    margin: 20px 20px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 `;
 
+const ReportDiv = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 10px;
+    `;
 
 // end of Components 
 
@@ -123,7 +137,6 @@ export default function Tweets() {
             user: auth.currentUser.email,
             userId: auth.currentUser.uid
         });
-        // console.log('u suckkkk')
         showTweet();
     }
 
@@ -152,8 +165,9 @@ export default function Tweets() {
         console.log('followed')
     }
 
-    const handleUnfollow = async () => {
+    const handleUnfollow = async (user) => {
         await addDoc(collection(db, "followers"), {
+            //i wanted to use deleteDoc but it wasnt working
             unfollow: user,
             userId: auth.currentUser.email,
         });
@@ -165,11 +179,37 @@ export default function Tweets() {
 
     // handle edit 
 
-    const handleEdit = async (id) => {
-        console.log('edit post')
-        //push to edit page
-        router.push(`./${id}`)
+    const [edit, setEdit] = useState(false)
+    const [NewTweet, setNewTweet] = useState('')
+
+    const handleEdit = async () => {
+        console.log('edit')
+        setEdit(true)
     }
+
+    const SumbitEdit = async () => {  
+        const docRef = doc(db, "posts", postId);
+
+    const EditedTweet = {
+        text: NewTweet,
+        oldText: tweet,
+        user: auth.currentUser.email,
+        userId: auth.currentUser.uid,
+        EditedAt: new Date()
+    }
+
+    updateDoc(docRef, EditedTweet)
+    .then(docRef => {
+        console.log("Your tweet has been edited");
+        showTweet();
+        setNewTweet('');
+        setEdit(false)
+    })
+    .catch(error => {
+        console.log(error);
+    });      
+    }
+    
 
     // end of handle edit
 
@@ -193,6 +233,7 @@ export default function Tweets() {
             user: auth.currentUser.email,
             userId: auth.currentUser.uid,
             tweetId: postId,
+            ReportedAt: new Date()
         });
         alert('report succesfully sent')
         setForm(false)
@@ -233,15 +274,33 @@ export default function Tweets() {
                     form ? (
                         <>
                             <ReportPopup>
+                                <ReportDiv>
                                 <DefaultButton onClick={() => setForm(false)}>x</DefaultButton>
-                                <label>What's your reason for reporting?</label>
+                                <label>Whats your reason for reporting?</label>
                                 <textarea
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                 ></textarea>
                                 <DefaultButton onClick={sendReport}>Next</DefaultButton>
+                                </ReportDiv>
                             </ReportPopup>
                         </>) : null
+                }
+                { edit ? (
+                    <>
+                        <ReportPopup>
+                            <ReportDiv>
+                                <DefaultButton onClick={() => {setEdit(false); setNewTweet('')}}>x</DefaultButton>
+                                <label>Edit your tweet</label>
+                                <textarea
+                                    placeholder={NewTweet}
+                                    value={NewTweet}
+                                    onChange={(e) => setNewTweet(e.target.value)}
+                                ></textarea>
+                                <DefaultButton onClick={SumbitEdit}>Next</DefaultButton>
+                            </ReportDiv>
+                        </ReportPopup>
+                    </>) : null
                 }
                 {/* <button onClick={()=>showTweet()}>test button</button> */}
                 {viewTweet.map(tweet => {
@@ -254,7 +313,7 @@ export default function Tweets() {
                                 <div>
                                     {following ? <DefaultButton onClick={(e) => handleUnfollow(e, tweet.user)}>Unfollow</DefaultButton> : <DefaultButton onClick={() => handleFollow(tweet.user)}>Follow</DefaultButton>}
                                     {/* <DefaultButton onClick={()=> handleFollow()}>{followText}</DefaultButton> */}
-                                    <DefaultButton onClick={() => handleEdit(tweet.id)}>Edit</DefaultButton>
+                                    <DefaultButton onClick={() => {handleEdit(); setPostId(tweet.id); setNewTweet(tweet.text)}}>Edit</DefaultButton>
                                     <DefaultButton onClick={() => { handleReport(); setPostId(tweet.id);}}>Report</DefaultButton>
                                 </div>
                             </PostHeader>
