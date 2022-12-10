@@ -164,12 +164,27 @@ export default function Tweets() {
     // end of handle following
 
     // handle edit 
+    const [editForm, setEditForm] = useState(false)
 
     const handleEdit = async (id) => {
         console.log('edit post')
         //push to edit page
-        router.push(`./${id}`)
+        setEditForm(true)
+        // router.push(`./${id}`)
     }
+
+    const editTweet = async () => {
+        const SubmitForm = await addDoc(collection(db, "edit"), {
+            text: message,
+            user: auth.currentUser.email,
+            userId: auth.currentUser.uid,
+            tweetId: postId,
+        });
+        alert('edit will be reviewed and updated')
+        setEditForm(false)
+        console.log('edit tweet')
+    }
+
 
     // end of handle edit
 
@@ -234,12 +249,26 @@ export default function Tweets() {
                         <>
                             <ReportPopup>
                                 <DefaultButton onClick={() => setForm(false)}>x</DefaultButton>
-                                <label>What's your reason for reporting?</label>
+                                <label>Edit Tweet</label>
                                 <textarea
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                 ></textarea>
                                 <DefaultButton onClick={sendReport}>Next</DefaultButton>
+                            </ReportPopup>
+                        </>) : null
+                }
+                {
+                    editForm ? (
+                        <>
+                            <ReportPopup>
+                                <DefaultButton onClick={() => setEditForm(false)}>x</DefaultButton>
+                                <label>Edit Tweet</label>
+                                <textarea
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                ></textarea>
+                                <DefaultButton onClick={editTweet}>Edit</DefaultButton>
                             </ReportPopup>
                         </>) : null
                 }
